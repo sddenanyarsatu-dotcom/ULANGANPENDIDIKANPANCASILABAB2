@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Pancasila Bab 2 - Kelas VI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef3ff;color:#26324b;font-family:Arial,sans-serif}
+header{background:linear-gradient(130deg,#173e9c,#697bf0);color:white;text-align:center;padding:25px 12px}
+header h1{font-size:25px;margin:10px 0}
+main{max-width:850px;margin:22px auto;padding:0 12px}
+.card{background:white;border-radius:17px;padding:22px;margin-bottom:16px;box-shadow:0 5px 20px #203b7515}
+h2{color:#2e49b5}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccd5e8;border-radius:9px;font-size:16px}
+button{border:0;border-radius:9px;background:#3452c5;color:white;padding:12px 16px;margin:4px;font-weight:bold;cursor:pointer}
+button:hover{opacity:.86}
+.secondary{background:#64748b}.green{background:#16845b}
+.option{display:block;padding:12px;border:1px solid #d6deed;border-radius:10px;margin:8px 0;cursor:pointer}
+.option input{width:auto;margin:0 8px 0 0}
+.progress{height:9px;background:#e3e8f5;border-radius:10px;overflow:hidden;margin:15px 0}
+#bar{height:100%;background:#14a879;width:0}
+.hidden{display:none!important}
+.notice{padding:12px;background:#fff4d2;border-radius:9px}
+.score{font-size:38px;font-weight:bold;color:#14845b}
+footer{text-align:center;padding:20px;color:#6a7589}
+</style>
+</head>
+<body>
+<header>
+<div>🎮 MISI GARUDA PANCASILA</div>
+<h1>Mengamalkan Pancasila untuk Kebahagiaan Bersama</h1>
+<p>Pendidikan Pancasila • Kelas VI • Bab 2</p>
+</header>
+
+<main>
+<section id="login" class="card">
+<h2>🔐 Login Siswa</h2>
+<p>Pilih nama lengkap dan masukkan NIPD sebagai kata sandi.</p>
+<label>Nama siswa</label>
+<select id="nama"><option value="">-- Pilih nama --</option></select>
+<label>NIPD / Kata sandi</label>
+<input id="nipd" type="password" inputmode="numeric" placeholder="Masukkan NIPD">
+<button onclick="login()">Masuk dan Mulai 🚀</button>
+<p id="error" style="color:#c62828"></p>
+<div class="notice">Kerjakan dengan jujur dan mandiri. Jangan membagikan NIPD kepada orang lain.</div>
+</section>
+
+<section id="petunjuk" class="card hidden">
+<h2>🇮🇩 Tantangan Kebahagiaan Bersama</h2>
+<p id="sapaan"></p>
+<ul>
+<li>15 soal pilihan ganda</li>
+<li>5 soal pilihan ganda kompleks</li>
+<li>5 soal menjodohkan</li>
+<li>10 soal isian singkat</li>
+<li>5 soal uraian</li>
+</ul>
+<p>Materi: pengamalan sila pertama sampai kelima dan karya kreatif ajakan mengamalkan Pancasila.</p>
+<button onclick="mulai()">Mulai Permainan 🎯</button>
+</section>
+
+<section id="game" class="card hidden">
+<b id="jenis"></b><span id="nomor" style="float:right"></span>
+<div class="progress"><div id="bar"></div></div>
+<h2 id="pertanyaan"></h2>
+<div id="opsi"></div>
+<p id="pesan"></p>
+<button class="secondary" onclick="prev()">← Sebelumnya</button>
+<button onclick="next()">Simpan & Lanjut →</button>
+<button class="green" onclick="finish()">Selesaikan Ulangan</button>
+</section>
+
+<section id="hasil" class="card hidden">
+<h2>🏆 Hasil Permainan</h2>
+<p id="identitas"></p>
+<div class="score" id="skor"></div>
+<p id="detail"></p>
+<div class="notice">Nilai otomatis berasal dari soal objektif. Lima soal uraian menunggu pemeriksaan guru.</div>
+<button onclick="downloadResult()">⬇️ Unduh Hasil</button>
+<button onclick="sendResult()">📩 Kirim Hasil ke Guru</button>
+<p id="status"></p>
+<button class="secondary" onclick="location.reload()">Keluar</button>
+</section>
+</main>
+<footer>Berbuat Baik • Bersatu • Adil • Bahagia Bersama</footer>
+
+<script>
+// Tempel URL Web App Google Apps Script di sini.
+const EMAIL_ENDPOINT = "";
+
+const students = [
+["ABID ALVARO GAVRIEL","2759"],
+["AFFIN CHARLISA ACHYARNIS","2760"],
+["ALBY FAREL AXEL FAIRUS","2761"],
+["ANGGRAITA DARA KUSUMANINGRUM","2762"],
+["ARGA ADAM ALFATIR","2763"],
+["ARIF AZHARI SETIAWAN","2764"],
+["AZIZ SATRIO PRAMBUDI","2765"],
+["AZKA KHOIRUNNISA","2766"],
+["BILQIS ZAHIRA ALYA AZIZA","2820"],
+["DANIEL IRKHAM YUNIANTO","2767"],
+["DELTA DANIES WICAKSONO","2768"],
+["ELVINA NOVITA SARI","2769"],
+["FATIN DESTIANA SHIDQIA","2770"],
+["IAN THU ALFIAN","2771"],
+["KHALISA ZAHRA RAMADHANI","2772"],
+["LABIBAH ANINDYA JIHAN TALITA ULFA","2774"],
+["MAYDA NURUL AZKIA","2775"],
+["MUHAMMAD AMIRRUDIN","2776"],
+["MUHAMMAD EZA HAFIZ ADITIYA","2777"],
+["MUHAMMAD RIFKY CAHYO SAPUTRO","2778"],
+["NURIYA JANNATUN NAIM","2779"],
+["PRABU AHMAD AHNAFI","2780"],
+["QEYLA ABSHARI FIRDA RAHMADANI","2848"],
+["RAHMAT MAULANA","2781"],
+["RAVA'EL DWI VANDIMAS","2782"],
+["RAVE'AL DIMAS PRAYOGA","2783"],
+["RISMACERLYN NUR ISKANDAR","2784"],
+["SAMUEL DESWA ANGGARA","2785"],
+["VAHDIL ASKA HARIANSYAH","2824"]
+];
+
+// [jenis, pertanyaan, pilihan/kunci jawaban, indeks kunci]
+const questions = [
+["pg","1. Menghormati teman yang menjalankan ibadah sesuai agamanya merupakan pengamalan sila ....",["Pertama","Kedua","Ketiga","Kelima"],0],
+["pg","2. Ketika melihat teman terjatuh, tindakan yang sesuai sila kedua adalah ....",["Menertawakan","Membantu dengan tulus","Membiarkannya","Menyalahkannya"],1],
+["pg","3. Contoh sikap menghargai perbedaan agama adalah ....",["Mengganggu ibadah","Memaksakan keyakinan","Memberi kesempatan beribadah","Mengejek kepercayaan"],2],
+["pg","4. Menolong korban bencana tanpa membedakan suku mencerminkan ....",["Kemanusiaan","Persaingan","Kepentingan pribadi","Permusuhan"],0],
+["pg","5. Kerja bakti membersihkan lingkungan dapat memperkuat ....",["Perpecahan","Persatuan","Permusuhan","Ketidakadilan"],1],
+["pg","6. Jika kelompok berbeda pendapat, sebaiknya ....",["Bertengkar","Memaksakan kehendak","Bermusyawarah","Meninggalkan kelompok"],2],
+["pg","7. Saat musyawarah, kita harus ....",["Mendengarkan pendapat orang lain","Memotong pembicaraan","Memaksakan pendapat","Menghina peserta"],0],
+["pg","8. Menerima hasil musyawarah dengan tanggung jawab mencerminkan sila ....",["Pertama","Kedua","Ketiga","Keempat"],3],
+["pg","9. Membagi bantuan secara adil sesuai kebutuhan merupakan contoh sila ....",["Pertama","Kedua","Keempat","Kelima"],3],
+["pg","10. Meminjamkan alat tulis kepada teman yang membutuhkan merupakan sikap ....",["Peduli","Egois","Curang","Sombong"],0],
+["pg","11. Saat melihat teman diejek karena perbedaan, kita sebaiknya ....",["Ikut mengejek","Membela dengan santun dan meminta bantuan jika perlu","Merekam untuk hiburan","Menyebarkan ejekan"],1],
+["pg","12. Media yang dapat digunakan untuk mengajak orang mengamalkan Pancasila adalah ....",["Poster ajakan kebaikan","Pesan kebencian","Berita bohong","Gambar penghinaan"],0],
+["pg","13. Poster yang baik seharusnya memiliki ....",["Pesan jelas dan gambar relevan","Tulisan tidak terbaca","Pesan yang menghina","Informasi palsu"],0],
+["pg","14. Contoh pengamalan sila kelima di sekolah adalah ....",["Memilih teman tertentu saja","Membagi tugas kelompok secara adil","Menguasai semua alat","Mengabaikan hak teman"],1],
+["pg","15. Tujuan mengamalkan nilai Pancasila adalah ....",["Menciptakan kehidupan rukun dan adil","Memenangkan semua perdebatan","Membatasi pertolongan","Membuat kelompok bermusuhan"],0],
+
+["kompleks","16. Pilih tindakan yang sesuai sila pertama.",["Menghormati teman beribadah","Memaksakan keyakinan","Tidak mengganggu kegiatan ibadah","Mengejek agama lain"],[0,2]],
+["kompleks","17. Pilih contoh pengamalan sila kedua.",["Menolong orang yang kesusahan","Menghargai martabat manusia","Mendiskriminasi teman","Bersikap peduli kepada sesama"],[0,1,3]],
+["kompleks","18. Pilih kegiatan yang memperkuat persatuan.",["Gotong royong","Menghargai keberagaman","Menyebarkan permusuhan","Bekerja sama dalam kegiatan warga"],[0,1,3]],
+["kompleks","19. Pilih sikap yang sesuai sila keempat.",["Mendengarkan pendapat","Bermusyawarah","Memaksakan keputusan pribadi","Menghargai hasil keputusan bersama"],[0,1,3]],
+["kompleks","20. Pilih contoh pengamalan sila kelima.",["Berbagi tugas dengan adil","Menghormati hak orang lain","Mengambil semua bantuan untuk diri sendiri","Membantu sesuai kebutuhan"],[0,1,3]],
+
+["match","21. Sila pertama berkaitan dengan ....",["Ketuhanan dan kebebasan beribadah","Kemanusiaan dan kepedulian","Persatuan bangsa","Musyawarah","Keadilan sosial"],0],
+["match","22. Sila kedua berkaitan dengan ....",["Ketuhanan dan kebebasan beribadah","Kemanusiaan dan kepedulian","Persatuan bangsa","Musyawarah","Keadilan sosial"],1],
+["match","23. Sila ketiga berkaitan dengan ....",["Ketuhanan dan kebebasan beribadah","Kemanusiaan dan kepedulian","Persatuan bangsa","Musyawarah","Keadilan sosial"],2],
+["match","24. Sila keempat berkaitan dengan ....",["Ketuhanan dan kebebasan beribadah","Kemanusiaan dan kepedulian","Persatuan bangsa","Musyawarah","Keadilan sosial"],3],
+["match","25. Sila kelima berkaitan dengan ....",["Ketuhanan dan kebebasan beribadah","Kemanusiaan dan kepedulian","Persatuan bangsa","Musyawarah","Keadilan sosial"],4],
+
+["fill","26. Bunyi sila pertama Pancasila diawali dengan kata Ketuhanan Yang Maha ....",["esa"]],
+["fill","27. Kegiatan bekerja bersama untuk kepentingan bersama disebut ....",["gotong royong","gotongroyong"]],
+["fill","28. Membahas persoalan bersama untuk mengambil keputusan disebut ....",["musyawarah"]],
+["fill","29. Sikap memperlakukan orang secara layak dan menghargai haknya disebut sikap ....",["adil","keadilan"]],
+["fill","30. Menolong orang lain tanpa mengharapkan imbalan merupakan sikap ....",["tulus","ikhlas"]],
+["fill","31. Semboyan bangsa Indonesia yang menghargai keberagaman adalah Bhinneka Tunggal ....",["ika"]],
+["fill","32. Karya berisi gambar dan ajakan singkat yang dipasang di tempat umum disebut ....",["poster"]],
+["fill","33. Sikap menerima perbedaan dan tidak memaksakan kehendak disebut ....",["toleransi","menghargai perbedaan"]],
+["fill","34. Hak dan kewajiban perlu dilaksanakan secara seimbang dan ....",["adil"]],
+["fill","35. Nilai Pancasila sebaiknya diterapkan dalam kehidupan ....",["sehari-hari","sehari hari"]],
+
+["essay","36. Berikan dua contoh pengamalan sila pertama dan dua contoh pengamalan sila kedua dalam kehidupan sehari-hari."],
+["essay","37. Ceritakan satu contoh kegiatan yang menunjukkan persatuan dan musyawarah di sekolah atau masyarakat."],
+["essay","38. Bagaimana sikapmu jika keputusan musyawarah berbeda dengan pendapatmu? Jelaskan alasannya."],
+["essay","39. Berikan tiga contoh pengamalan sila kelima di rumah, sekolah, atau masyarakat."],
+["essay","40. Rancang karya kreatif berupa poster atau slogan untuk mengajak warga mengamalkan Pancasila. Tuliskan judul, pesan ajakan, dan gambar yang akan digunakan."]
+];
+
+let student=null,order=[],pos=0,answers={};
+const $=id=>document.getElementById(id);
+
+students.forEach(s=>$("nama").add(new Option(s[0],s[0])));
+
+function login(){
+ const n=$("nama").value,p=$("nipd").value;
+ student=students.find(s=>s[0]===n&&s[1]===p);
+ if(!student){$("error").textContent="Nama atau NIPD tidak sesuai.";return;}
+ $("login").classList.add("hidden");
+ $("petunjuk").classList.remove("hidden");
+ $("sapaan").textContent="Selamat datang, "+student[0]+"! Siap menjalankan Misi Garuda?";
+}
+function mulai(){
+ order=questions.map((_,i)=>i);
+ for(let i=order.length-1;i>0;i--){
+  let j=Math.floor(Math.random()*(i+1));
+  [order[i],order[j]]=[order[j],order[i]];
+ }
+ pos=0;$("petunjuk").classList.add("hidden");
+ $("game").classList.remove("hidden");showQuestion();
+}
+function showQuestion(){
+ const q=questions[order[pos]],box=$("opsi");
+ $("jenis").textContent=({pg:"Pilihan Ganda",kompleks:"Pilihan Ganda Kompleks",match:"Menjodohkan",fill:"Isian Singkat",essay:"Uraian"})[q[0]];
+ $("nomor").textContent=`${pos+1}/40`;
+ $("bar").style.width=((pos+1)/40*100)+"%";
+ $("pertanyaan").textContent=q[1];$("pesan").textContent="";
+ box.innerHTML="";
+ if(q[0]==="pg"||q[0]==="kompleks"){
+  q[2].forEach((v,i)=>{
+   let lab=document.createElement("label");lab.className="option";
+   let inp=document.createElement("input");
+   inp.type=q[0]==="pg"?"radio":"checkbox";inp.name="ans";inp.value=i;
+   const old=answers[order[pos]];
+   inp.checked=q[0]==="pg"?old===i:Array.isArray(old)&&old.includes(i);
+   lab.append(inp,document.createTextNode(" "+String.fromCharCode(65+i)+". "+v));box.append(lab);
+  });
+  if(q[0]==="kompleks")box.insertAdjacentHTML("beforeend","<p class='small'>Pilih semua jawaban yang benar.</p>");
+ }else if(q[0]==="match"){
+  let sel=document.createElement("select");sel.id="ans";
+  sel.add(new Option("-- Pilih jawaban --",""));
+  q[2].forEach((v,i)=>sel.add(new Option(v,String(i))));
+  sel.value=answers[order[pos]]??"";box.append(sel);
+ }else{
+  let ta=document.createElement("textarea");ta.rows=q[0]==="essay"?5:2;
+  ta.placeholder=q[0]==="essay"?"Tuliskan jawaban dengan jelas...":"Ketik jawaban singkat...";
+  ta.value=answers[order[pos]]||"";box.append(ta);
+ }
+}
+function save(){
+ const q=questions[order[pos]];
+ if(q[0]==="pg"){
+  const v=document.querySelector('input[name="ans"]:checked');
+  if(v)answers[order[pos]]=Number(v.value);
+ }else if(q[0]==="kompleks"){
+  answers[order[pos]]=[...document.querySelectorAll('input[name="ans"]:checked')].map(x=>Number(x.value));
+ }else if(q[0]==="match"){
+  answers[order[pos]]=$("ans").value;
+ }else{
+  answers[order[pos]]=$("opsi").querySelector("textarea").value.trim();
+ }
+}
+function prev(){save();if(pos>0){pos--;showQuestion();}}
+function next(){save();if(pos<39){pos++;showQuestion();}else $("pesan").textContent="Ini soal terakhir. Periksa jawaban sebelum selesai.";}
+
+function finish(){
+ save();
+ if(!confirm("Yakin menyelesaikan ulangan?"))return;
+ let score={pg:0,kompleks:0,match:0,fill:0};
+ questions.forEach((q,i)=>{
+  const a=answers[i];
+  if(q[0]==="pg"&&a===q[3])score.pg+=2;
+  if(q[0]==="kompleks"&&Array.isArray(a)&&a.length===q[3].length&&a.every(x=>q[3].includes(x)))score.kompleks+=3;
+  if(q[0]==="match"&&a!==undefined&&a!==""&&Number(a)===q[3])score.match+=2;
+  if(q[0]==="fill"&&typeof a==="string"&&q[2].some(x=>a.trim().toLowerCase()===x.toLowerCase()))score.fill+=2;
+ });
+ const total=score.pg+score.kompleks+score.match+score.fill;
+ window.result={
+  nama:student[0],nipd:student[1],
+  waktu:new Date().toLocaleString("id-ID"),
+  nilaiOtomatis:total,rincian:score,
+  jawaban:questions.map((q,i)=>({
+   nomor:i+1,jenis:q[0],pertanyaan:q[1],jawaban:answers[i]??""
+  }))
+ };
+ $("game").classList.add("hidden");$("hasil").classList.remove("hidden");
+ $("identitas").textContent=student[0]+" • NIPD: "+student[1];
+ $("skor").textContent=total+"/75";
+ $("detail").textContent=`PG ${score.pg}/30 • Kompleks ${score.kompleks}/15 • Menjodohkan ${score.match}/10 • Isian ${score.fill}/20 • Uraian menunggu penilaian guru/25.`;
+}
+function downloadResult(){
+ const blob=new Blob([JSON.stringify(window.result,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="hasil-pancasila-bab2-"+student[1]+".json";
+ a.click();URL.revokeObjectURL(url);
+}
+async function sendResult(){
+ if(!EMAIL_ENDPOINT){
+  $("status").textContent="Pengiriman belum aktif. Konfigurasikan Google Apps Script lalu masukkan URL Web App pada EMAIL_ENDPOINT.";
+  return;
+ }
+ $("status").textContent="Mengirim permintaan...";
+ try{
+  await fetch(EMAIL_ENDPOINT,{method:"POST",mode:"no-cors",
+   headers:{"Content-Type":"text/plain;charset=utf-8"},
+   body:JSON.stringify(window.result)});
+  $("status").textContent="Permintaan pengiriman dikirim. Periksa Google Sheets dan Gmail guru untuk memastikan hasil diterima.";
+ }catch(e){
+  $("status").textContent="Pengiriman gagal. Silakan unduh hasil sebagai cadangan.";
+ }
+}
+</script>
+</body>
+</html>
